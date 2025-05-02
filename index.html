@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Space Invaders - JS DOM</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <div id="scoreboard">
+      <span>Time: <span id="timer">0</span>s</span>
+      <span>Score: <span id="score">0</span></span>
+      <span>Lives: <span id="lives">3</span></span>
+    </div>
+
+    <div id="game-area">
+      <div id="player"></div>
+      <div id="enemies"></div>
+      <div id="bullets"></div>
+    </div>
+
+    <div id="pause-menu" class="hidden">
+      <button id="resume-btn">Continue</button>
+      <button id="restart-btn">Restart</button>
+    </div>
+
+    <button id="pause-btn">Pause</button>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
