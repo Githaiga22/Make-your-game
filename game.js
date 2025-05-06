@@ -25,6 +25,11 @@ let enemyRows = 3;
 let enemyCols = 5;
 let enemyShootInterval = 2000;
 let lastEnemyShot = 0;
+let lastPlayerShot = 0;
+let playerShootCooldown = 250; // Cooldown between shots in milliseconds
+let frameCount = 0;
+let lastFPSUpdate = 0;
+let fps = 0;
 
 // Input Handling
 document.addEventListener("keydown", e => {
@@ -88,12 +93,15 @@ function updatePlayer() {
   if (right && pos < 360) pos += playerSpeed;
   player.style.left = `${pos}px`;
 
-  if (shoot && bullets.children.length < 1) {
+  // Improved shooting mechanics
+  const currentTime = performance.now();
+  if (shoot && currentTime - lastPlayerShot > playerShootCooldown) {
     const bullet = document.createElement("div");
     bullet.classList.add("bullet");
     bullet.style.left = `${player.offsetLeft + 17}px`;
     bullet.style.top = `${player.offsetTop - 10}px`;
     bullets.appendChild(bullet);
+    lastPlayerShot = currentTime;
   }
 }
 
@@ -146,13 +154,17 @@ function showLoseMenu() {
 }
 
 function updateBullets() {
+  const bulletsToRemove = [];
   Array.from(bullets.children).forEach(bullet => {
     bullet.style.top = `${bullet.offsetTop - bulletSpeed}px`;
-    if (bullet.offsetTop < 0) bullet.remove();
+    if (bullet.offsetTop < 0) {
+      bulletsToRemove.push(bullet);
+      return;
+    }
 
     Array.from(enemies.children).forEach(enemy => {
       if (checkCollision(bullet, enemy)) {
-        bullet.remove();
+        bulletsToRemove.push(bullet);
         enemy.remove();
         score += 10;
         scoreDisplay.textContent = score;
@@ -162,7 +174,6 @@ function updateBullets() {
           gameRunning = false;
           timerDisplay.textContent = Math.floor(timeElapsed);
           
-          // Wait for 2 seconds before showing win message
           setTimeout(() => {
             showWinMenu();
           }, 500);
@@ -170,6 +181,9 @@ function updateBullets() {
       }
     });
   });
+
+  // Remove bullets in a batch
+  bulletsToRemove.forEach(bullet => bullet.remove());
 }
 
 function updateEnemies() {
@@ -207,21 +221,23 @@ function updateEnemies() {
 }
 
 function updateEnemyBullets() {
+  const bulletsToRemove = [];
   Array.from(enemyBullets.children).forEach(bullet => {
     bullet.style.top = `${bullet.offsetTop + enemyBulletSpeed}px`;
     
-    // Remove bullet if it goes off screen
     if (bullet.offsetTop > 600) {
-      bullet.remove();
+      bulletsToRemove.push(bullet);
       return;
     }
 
-    // Check collision with player
     if (checkCollision(bullet, player)) {
-      bullet.remove();
+      bulletsToRemove.push(bullet);
       loseLife();
     }
   });
+
+  // Remove bullets in a batch
+  bulletsToRemove.forEach(bullet => bullet.remove());
 }
 
 function loseLife() {
@@ -263,19 +279,37 @@ function updateTimer(dt) {
   timerDisplay.textContent = Math.floor(timeElapsed);
 }
 
+function updateFPS(timestamp) {
+  frameCount++;
+  if (timestamp - lastFPSUpdate >= 1000) {
+    fps = frameCount;
+    frameCount = 0;
+    lastFPSUpdate = timestamp;
+  }
+}
+
 function gameLoop(timestamp) {
   if (!gameRunning) return;
-  const dt = timestamp - lastTime;
+
+  // Calculate delta time in seconds
+  const dt = (timestamp - lastTime) / 1000;
   lastTime = timestamp;
 
+  // Update FPS counter
+  updateFPS(timestamp);
+
+  // Update game state
   updatePlayer();
   updateBullets();
   updateEnemies();
   updateEnemyBullets();
-  updateTimer(dt);
+  updateTimer(dt * 1000); // Convert back to milliseconds for timer
 
+  // Use requestAnimationFrame with timestamp
   requestAnimationFrame(gameLoop);
 }
 
+// Initialize game
 createEnemies();
+lastTime = performance.now();
 requestAnimationFrame(gameLoop);
