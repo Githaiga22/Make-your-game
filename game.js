@@ -37,8 +37,12 @@ document.addEventListener("keyup", e => {
 
 // Pause Menu
 pauseBtn.addEventListener("click", () => {
-  gameRunning = false;
-  pauseMenu.classList.remove("hidden");
+  gameRunning = !gameRunning;
+  pauseMenu.style.display = gameRunning ? "none" : "flex";
+  pauseMenu.classList.toggle("hidden");
+  if (gameRunning) {
+    requestAnimationFrame(gameLoop);
+  }
 });
 
 resumeBtn.addEventListener("click", () => {
@@ -51,6 +55,7 @@ restartBtn.addEventListener("click", () => {
   location.reload();
 });
 
+//  creates a block
 function createEnemies() {
   enemies.innerHTML = "";
   for (let row = 0; row < enemyRows; row++) {
