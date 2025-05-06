@@ -1,6 +1,7 @@
 const player = document.getElementById("player");
 const enemies = document.getElementById("enemies");
 const bullets = document.getElementById("bullets");
+const enemyBullets = document.getElementById("enemy-bullets");
 const scoreDisplay = document.getElementById("score");
 const livesDisplay = document.getElementById("lives");
 const timerDisplay = document.getElementById("timer");
@@ -12,6 +13,7 @@ const restartBtn = document.getElementById("restart-btn");
 let left = false, right = false, shoot = false;
 let playerSpeed = 10;
 let bulletSpeed = 8;
+let enemyBulletSpeed = 5;
 let gameRunning = true;
 let lastTime = 0;
 let score = 0;
@@ -21,6 +23,8 @@ let enemyDirection = 1;
 let enemySpeed = 0.5;
 let enemyRows = 3;
 let enemyCols = 5;
+let enemyShootInterval = 2000;
+let lastEnemyShot = 0;
 
 // Input Handling
 document.addEventListener("keydown", e => {
@@ -187,6 +191,37 @@ function updateEnemies() {
       enemy.style.top = `${enemy.offsetTop + 10}px`;
     });
   }
+
+  // Enemy shooting logic
+  const currentTime = performance.now();
+  if (currentTime - lastEnemyShot > enemyShootInterval && enemies.children.length > 0) {
+    // Select a random enemy to shoot
+    const randomEnemy = enemies.children[Math.floor(Math.random() * enemies.children.length)];
+    const enemyBullet = document.createElement("div");
+    enemyBullet.classList.add("enemy-bullet");
+    enemyBullet.style.left = `${randomEnemy.offsetLeft + 15}px`; // Center the bullet
+    enemyBullet.style.top = `${randomEnemy.offsetTop + 20}px`;
+    enemyBullets.appendChild(enemyBullet);
+    lastEnemyShot = currentTime;
+  }
+}
+
+function updateEnemyBullets() {
+  Array.from(enemyBullets.children).forEach(bullet => {
+    bullet.style.top = `${bullet.offsetTop + enemyBulletSpeed}px`;
+    
+    // Remove bullet if it goes off screen
+    if (bullet.offsetTop > 600) {
+      bullet.remove();
+      return;
+    }
+
+    // Check collision with player
+    if (checkCollision(bullet, player)) {
+      bullet.remove();
+      loseLife();
+    }
+  });
 }
 
 function loseLife() {
@@ -236,6 +271,7 @@ function gameLoop(timestamp) {
   updatePlayer();
   updateBullets();
   updateEnemies();
+  updateEnemyBullets();
   updateTimer(dt);
 
   requestAnimationFrame(gameLoop);
