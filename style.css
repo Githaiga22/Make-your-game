@@ -19,10 +19,25 @@ body {
   
   #scoreboard {
     position: absolute;
-    top: 5px;
-    left: 5px;
-    font-size: 14px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 0;
+    font-size: 16px;
+    text-align: center;
+    border-bottom: 2px solid #fff;
     z-index: 2;
+  }
+  
+  #scoreboard span {
+    margin: 0 15px;
+    font-weight: bold;
+  }
+  
+  #scoreboard span span {
+    color: #00ff00;
+    margin: 0 5px;
   }
   
   #game-area {
@@ -78,5 +93,97 @@ body {
   
   .hidden {
     display: none !important;
+  }
+  
+  #win-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border: 2px solid #fff;
+    text-align: center;
+    z-index: 4;
+  }
+  
+  #win-menu h2 {
+    color: #00ff00;
+    margin-bottom: 20px;
+  }
+  
+  #win-menu p {
+    margin: 10px 0;
+    font-size: 18px;
+  }
+  
+  #play-again-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #00ff00;
+    border: none;
+    color: #000;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  #play-again-btn:hover {
+    background: #00cc00;
+  }
+  
+  #lose-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border: 2px solid #ff0000;
+    text-align: center;
+    z-index: 4;
+  }
+  
+  #lose-menu h2 {
+    color: #ff0000;
+    margin-bottom: 20px;
+  }
+  
+  #lose-menu p {
+    margin: 10px 0;
+    font-size: 18px;
+  }
+  
+  .lose-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  #lose-menu button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  #continue-btn {
+    background: #00ff00;
+    color: #000;
+  }
+  
+  #continue-btn:hover {
+    background: #00cc00;
+  }
+  
+  #restart-lose-btn {
+    background: #ff0000;
+    color: #fff;
+  }
+  
+  #restart-lose-btn:hover {
+    background: #cc0000;
   }
   

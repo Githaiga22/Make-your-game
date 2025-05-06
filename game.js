@@ -58,12 +58,21 @@ restartBtn.addEventListener("click", () => {
 //  creates a block
 function createEnemies() {
   enemies.innerHTML = "";
+  const startY = 50; // Position after scoreboard title bar
+  const enemyWidth = 30;
+  const enemyHeight = 20;
+  const spacingX = 60;
+  const spacingY = 40;
+  
   for (let row = 0; row < enemyRows; row++) {
     for (let col = 0; col < enemyCols; col++) {
       const enemy = document.createElement("div");
       enemy.classList.add("enemy");
-      enemy.style.top = `${row * 40}px`;
-      enemy.style.left = `${col * 60}px`;
+      enemy.style.position = "absolute";
+      enemy.style.width = `${enemyWidth}px`;
+      enemy.style.height = `${enemyHeight}px`;
+      enemy.style.top = `${startY + (row * spacingY)}px`;
+      enemy.style.left = `${col * spacingX}px`;
       enemies.appendChild(enemy);
     }
   }
@@ -84,6 +93,24 @@ function updatePlayer() {
   }
 }
 
+function showWinMenu() {
+  const winMenu = document.createElement("div");
+  winMenu.id = "win-menu";
+  winMenu.innerHTML = `
+    <h2>You Won!</h2>
+    <p>Time: ${Math.floor(timeElapsed)}s</p>
+    <p>Score: ${score}</p>
+    <button id="play-again-btn">Play Again</button>
+  `;
+  document.getElementById("game-container").appendChild(winMenu);
+  
+  document.getElementById("play-again-btn").addEventListener("click", () => {
+    location.reload();
+  });
+}
+
+
+
 function updateBullets() {
   Array.from(bullets.children).forEach(bullet => {
     bullet.style.top = `${bullet.offsetTop - bulletSpeed}px`;
@@ -95,6 +122,17 @@ function updateBullets() {
         enemy.remove();
         score += 10;
         scoreDisplay.textContent = score;
+        
+        // Check if all enemies are destroyed
+        if (enemies.children.length === 0) {
+          gameRunning = false;
+          timerDisplay.textContent = Math.floor(timeElapsed);
+          
+          // Wait for 2 seconds before showing win message
+          setTimeout(() => {
+            showWinMenu();
+          }, 500);
+        }
       }
     });
   });
@@ -111,7 +149,8 @@ function updateEnemies() {
     enemyDirection *= -1;
     Array.from(enemies.children).forEach(enemy => {
       enemy.style.top = `${enemy.offsetTop + 10}px`;
-      if (enemy.offsetTop + 20 >= 580) {
+      // Check if any enemy has reached the player's level
+      if (enemy.offsetTop + 20 >= player.offsetTop - 30) {
         loseLife();
       }
     });
@@ -121,9 +160,15 @@ function updateEnemies() {
 function loseLife() {
   lives--;
   livesDisplay.textContent = lives;
+  gameRunning = false;
+  
   if (lives <= 0) {
     alert("Game Over!");
     location.reload();
+  } else {
+    setTimeout(() => {
+      showLoseMenu();
+    }, 500);
   }
 }
 
