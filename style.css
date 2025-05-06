@@ -196,3 +196,58 @@ body {
     background: #cc0000;
   }
   
+  #level-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border: 2px solid #00ff00;
+    text-align: center;
+    z-index: 4;
+  }
+  
+  #level-menu h2 {
+    color: #00ff00;
+    margin-bottom: 20px;
+  }
+  
+  #level-menu p {
+    margin: 10px 0;
+    font-size: 18px;
+  }
+  
+  .level-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  #level-menu button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  #next-level-btn {
+    background: #00ff00;
+    color: #000;
+  }
+  
+  #next-level-btn:hover {
+    background: #00cc00;
+  }
+  
+  #restart-level-btn {
+    background: #ff9900;
+    color: #000;
+  }
+  
+  #restart-level-btn:hover {
+    background: #cc7700;
+  }
+  
