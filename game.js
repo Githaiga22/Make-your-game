@@ -37,8 +37,12 @@ document.addEventListener("keyup", e => {
 
 // Pause Menu
 pauseBtn.addEventListener("click", () => {
-  gameRunning = false;
-  pauseMenu.classList.remove("hidden");
+  gameRunning = !gameRunning;
+  pauseMenu.style.display = gameRunning ? "none" : "flex";
+  pauseMenu.classList.toggle("hidden");
+  if (gameRunning) {
+    requestAnimationFrame(gameLoop);
+  }
 });
 
 resumeBtn.addEventListener("click", () => {
@@ -51,14 +55,24 @@ restartBtn.addEventListener("click", () => {
   location.reload();
 });
 
+//  creates a block
 function createEnemies() {
   enemies.innerHTML = "";
+  const startY = 50; // Position after scoreboard title bar
+  const enemyWidth = 30;
+  const enemyHeight = 20;
+  const spacingX = 60;
+  const spacingY = 40;
+  
   for (let row = 0; row < enemyRows; row++) {
     for (let col = 0; col < enemyCols; col++) {
       const enemy = document.createElement("div");
       enemy.classList.add("enemy");
-      enemy.style.top = `${row * 40}px`;
-      enemy.style.left = `${col * 60}px`;
+      enemy.style.position = "absolute";
+      enemy.style.width = `${enemyWidth}px`;
+      enemy.style.height = `${enemyHeight}px`;
+      enemy.style.top = `${startY + (row * spacingY)}px`;
+      enemy.style.left = `${col * spacingX}px`;
       enemies.appendChild(enemy);
     }
   }
@@ -79,6 +93,54 @@ function updatePlayer() {
   }
 }
 
+function showWinMenu() {
+  const winMenu = document.createElement("div");
+  winMenu.id = "win-menu";
+  winMenu.innerHTML = `
+    <h2>You Won!</h2>
+    <p>Time: ${Math.floor(timeElapsed)}s</p>
+    <p>Score: ${score}</p>
+    <button id="play-again-btn">Play Again</button>
+  `;
+  document.getElementById("game-container").appendChild(winMenu);
+  
+  document.getElementById("play-again-btn").addEventListener("click", () => {
+    location.reload();
+  });
+}
+
+function showLoseMenu() {
+  const loseMenu = document.createElement("div");
+  loseMenu.id = "lose-menu";
+  loseMenu.innerHTML = `
+    <h2>You Lost a Life!</h2>
+    <p>Lives remaining: ${lives}</p>
+    <div class="lose-buttons">
+      <button id="continue-btn">Continue (${lives} lives)</button>
+      <button id="restart-lose-btn">Restart Game</button>
+    </div>
+  `;
+  document.getElementById("game-container").appendChild(loseMenu);
+  
+  document.getElementById("continue-btn").addEventListener("click", () => {
+    loseMenu.remove();
+    // Reset game state
+    enemies.innerHTML = "";
+    bullets.innerHTML = "";
+    player.style.left = "180px";
+    // Reset enemy movement variables
+    enemyDirection = 1;
+    createEnemies();
+    gameRunning = true;
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+  });
+  
+  document.getElementById("restart-lose-btn").addEventListener("click", () => {
+    location.reload();
+  });
+}
+
 function updateBullets() {
   Array.from(bullets.children).forEach(bullet => {
     bullet.style.top = `${bullet.offsetTop - bulletSpeed}px`;
@@ -90,6 +152,17 @@ function updateBullets() {
         enemy.remove();
         score += 10;
         scoreDisplay.textContent = score;
+        
+        // Check if all enemies are destroyed
+        if (enemies.children.length === 0) {
+          gameRunning = false;
+          timerDisplay.textContent = Math.floor(timeElapsed);
+          
+          // Wait for 2 seconds before showing win message
+          setTimeout(() => {
+            showWinMenu();
+          }, 500);
+        }
       }
     });
   });
@@ -100,25 +173,42 @@ function updateEnemies() {
   Array.from(enemies.children).forEach(enemy => {
     enemy.style.left = `${enemy.offsetLeft + enemyDirection}px`;
     if (enemy.offsetLeft <= 0 || enemy.offsetLeft + 30 >= 400) hitEdge = true;
+    
+    // Check if any enemy has reached the player's level
+    if (enemy.offsetTop + 20 >= player.offsetTop - 30) {
+      loseLife();
+      return; // Exit the function to prevent further updates
+    }
   });
 
   if (hitEdge) {
     enemyDirection *= -1;
     Array.from(enemies.children).forEach(enemy => {
       enemy.style.top = `${enemy.offsetTop + 10}px`;
-      if (enemy.offsetTop + 20 >= 580) {
-        loseLife();
-      }
     });
   }
 }
 
 function loseLife() {
+  if (!gameRunning) return; // Prevent multiple lose events
+  
   lives--;
   livesDisplay.textContent = lives;
+  gameRunning = false;
+  
   if (lives <= 0) {
     alert("Game Over!");
     location.reload();
+  } else {
+    // Clear any existing lose menu
+    const existingMenu = document.getElementById("lose-menu");
+    if (existingMenu) {
+      existingMenu.remove();
+    }
+    
+    setTimeout(() => {
+      showLoseMenu();
+    }, 500);
   }
 }
 
