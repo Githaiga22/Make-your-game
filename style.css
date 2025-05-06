@@ -66,9 +66,18 @@ body {
   
   .bullet {
     position: absolute;
-    width: 5px;
+    width: 4px;
     height: 10px;
-    background: yellow;
+    background-color: #fff;
+    border-radius: 2px;
+  }
+  
+  .enemy-bullet {
+    position: absolute;
+    width: 4px;
+    height: 10px;
+    background-color: #ff4444;
+    border-radius: 2px;
   }
   
   #pause-btn {
