@@ -10,8 +10,8 @@ const resumeBtn = document.getElementById("resume-btn");
 const restartBtn = document.getElementById("restart-btn");
 
 let left = false, right = false, shoot = false;
-let playerSpeed = 5;
-let bulletSpeed = 7;
+let playerSpeed = 10;
+let bulletSpeed = 8;
 let gameRunning = true;
 let lastTime = 0;
 let score = 0;
