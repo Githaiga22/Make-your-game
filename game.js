@@ -9,6 +9,7 @@ const pauseBtn = document.getElementById("pause-btn");
 const pauseMenu = document.getElementById("pause-menu");
 const resumeBtn = document.getElementById("resume-btn");
 const restartBtn = document.getElementById("restart-btn");
+const levelDisplay = document.getElementById("level");
 
 let left = false, right = false, shoot = false;
 let playerSpeed = 10;
@@ -30,6 +31,7 @@ let playerShootCooldown = 250; // Cooldown between shots in milliseconds
 let frameCount = 0;
 let lastFPSUpdate = 0;
 let fps = 0;
+let currentLevel = 1;
 
 // Input Handling
 document.addEventListener("keydown", e => {
@@ -153,6 +155,69 @@ function showLoseMenu() {
   });
 }
 
+function showLevelCompleteMenu() {
+  const levelMenu = document.createElement("div");
+  levelMenu.id = "level-menu";
+  levelMenu.innerHTML = `
+    <h2>Level ${currentLevel} Complete!</h2>
+    <p>Score: ${score}</p>
+    <p>Time: ${Math.floor(timeElapsed)}s</p>
+    <div class="level-buttons">
+      <button id="next-level-btn">Proceed to Level ${currentLevel + 1}</button>
+      <button id="restart-level-btn">Restart Level</button>
+    </div>
+  `;
+  document.getElementById("game-container").appendChild(levelMenu);
+  
+  document.getElementById("next-level-btn").addEventListener("click", () => {
+    levelMenu.remove();
+    startNextLevel();
+  });
+  
+  document.getElementById("restart-level-btn").addEventListener("click", () => {
+    levelMenu.remove();
+    restartLevel();
+  });
+}
+
+function startNextLevel() {
+  currentLevel++;
+  levelDisplay.textContent = currentLevel;
+  
+  // Increase difficulty
+  enemyBulletSpeed += 1;
+  enemyShootInterval = Math.max(500, enemyShootInterval - 200); // Decrease interval but not below 500ms
+  enemySpeed += 0.2;
+  
+  // Reset game state for new level
+  enemies.innerHTML = "";
+  bullets.innerHTML = "";
+  enemyBullets.innerHTML = "";
+  player.style.left = "180px";
+  enemyDirection = 1;
+  
+  // Create new enemies
+  createEnemies();
+  gameRunning = true;
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+function restartLevel() {
+  // Reset game state for current level
+  enemies.innerHTML = "";
+  bullets.innerHTML = "";
+  enemyBullets.innerHTML = "";
+  player.style.left = "180px";
+  enemyDirection = 1;
+  
+  // Create new enemies
+  createEnemies();
+  gameRunning = true;
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
 function updateBullets() {
   const bulletsToRemove = [];
   Array.from(bullets.children).forEach(bullet => {
@@ -175,7 +240,7 @@ function updateBullets() {
           timerDisplay.textContent = Math.floor(timeElapsed);
           
           setTimeout(() => {
-            showWinMenu();
+            showLevelCompleteMenu();
           }, 500);
         }
       }
