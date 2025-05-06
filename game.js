@@ -109,7 +109,37 @@ function showWinMenu() {
   });
 }
 
-
+function showLoseMenu() {
+  const loseMenu = document.createElement("div");
+  loseMenu.id = "lose-menu";
+  loseMenu.innerHTML = `
+    <h2>You Lost a Life!</h2>
+    <p>Lives remaining: ${lives}</p>
+    <div class="lose-buttons">
+      <button id="continue-btn">Continue (${lives} lives)</button>
+      <button id="restart-lose-btn">Restart Game</button>
+    </div>
+  `;
+  document.getElementById("game-container").appendChild(loseMenu);
+  
+  document.getElementById("continue-btn").addEventListener("click", () => {
+    loseMenu.remove();
+    // Reset game state
+    enemies.innerHTML = "";
+    bullets.innerHTML = "";
+    player.style.left = "180px";
+    // Reset enemy movement variables
+    enemyDirection = 1;
+    createEnemies();
+    gameRunning = true;
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+  });
+  
+  document.getElementById("restart-lose-btn").addEventListener("click", () => {
+    location.reload();
+  });
+}
 
 function updateBullets() {
   Array.from(bullets.children).forEach(bullet => {
@@ -143,21 +173,25 @@ function updateEnemies() {
   Array.from(enemies.children).forEach(enemy => {
     enemy.style.left = `${enemy.offsetLeft + enemyDirection}px`;
     if (enemy.offsetLeft <= 0 || enemy.offsetLeft + 30 >= 400) hitEdge = true;
+    
+    // Check if any enemy has reached the player's level
+    if (enemy.offsetTop + 20 >= player.offsetTop - 30) {
+      loseLife();
+      return; // Exit the function to prevent further updates
+    }
   });
 
   if (hitEdge) {
     enemyDirection *= -1;
     Array.from(enemies.children).forEach(enemy => {
       enemy.style.top = `${enemy.offsetTop + 10}px`;
-      // Check if any enemy has reached the player's level
-      if (enemy.offsetTop + 20 >= player.offsetTop - 30) {
-        loseLife();
-      }
     });
   }
 }
 
 function loseLife() {
+  if (!gameRunning) return; // Prevent multiple lose events
+  
   lives--;
   livesDisplay.textContent = lives;
   gameRunning = false;
@@ -166,6 +200,12 @@ function loseLife() {
     alert("Game Over!");
     location.reload();
   } else {
+    // Clear any existing lose menu
+    const existingMenu = document.getElementById("lose-menu");
+    if (existingMenu) {
+      existingMenu.remove();
+    }
+    
     setTimeout(() => {
       showLoseMenu();
     }, 500);
