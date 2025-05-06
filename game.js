@@ -305,6 +305,25 @@ function updateEnemyBullets() {
   bulletsToRemove.forEach(bullet => bullet.remove());
 }
 
+function showGameOverMenu() {
+  const gameOverMenu = document.createElement("div");
+  gameOverMenu.id = "game-over-menu";
+  gameOverMenu.innerHTML = `
+    <h2>Game Over!</h2>
+    <p>Final Score: ${score}</p>
+    <p>Level Reached: ${currentLevel}</p>
+    <p>Time Survived: ${Math.floor(timeElapsed)}s</p>
+    <div class="game-over-buttons">
+      <button id="play-again-btn">Start Over</button>
+    </div>
+  `;
+  document.getElementById("game-container").appendChild(gameOverMenu);
+  
+  document.getElementById("play-again-btn").addEventListener("click", () => {
+    location.reload();
+  });
+}
+
 function loseLife() {
   if (!gameRunning) return; // Prevent multiple lose events
   
@@ -313,8 +332,15 @@ function loseLife() {
   gameRunning = false;
   
   if (lives <= 0) {
-    alert("Game Over!");
-    location.reload();
+    // Clear any existing menus
+    const existingMenu = document.getElementById("lose-menu");
+    if (existingMenu) {
+      existingMenu.remove();
+    }
+    
+    setTimeout(() => {
+      showGameOverMenu();
+    }, 500);
   } else {
     // Clear any existing lose menu
     const existingMenu = document.getElementById("lose-menu");
