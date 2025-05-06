@@ -1,6 +1,7 @@
 const player = document.getElementById("player");
 const enemies = document.getElementById("enemies");
 const bullets = document.getElementById("bullets");
+const enemyBullets = document.getElementById("enemy-bullets");
 const scoreDisplay = document.getElementById("score");
 const livesDisplay = document.getElementById("lives");
 const timerDisplay = document.getElementById("timer");
@@ -8,10 +9,12 @@ const pauseBtn = document.getElementById("pause-btn");
 const pauseMenu = document.getElementById("pause-menu");
 const resumeBtn = document.getElementById("resume-btn");
 const restartBtn = document.getElementById("restart-btn");
+const levelDisplay = document.getElementById("level");
 
 let left = false, right = false, shoot = false;
 let playerSpeed = 10;
 let bulletSpeed = 8;
+let enemyBulletSpeed = 5;
 let gameRunning = true;
 let lastTime = 0;
 let score = 0;
@@ -21,6 +24,14 @@ let enemyDirection = 1;
 let enemySpeed = 0.5;
 let enemyRows = 3;
 let enemyCols = 5;
+let enemyShootInterval = 2000;
+let lastEnemyShot = 0;
+let lastPlayerShot = 0;
+let playerShootCooldown = 250; // Cooldown between shots in milliseconds
+let frameCount = 0;
+let lastFPSUpdate = 0;
+let fps = 0;
+let currentLevel = 1;
 
 // Input Handling
 document.addEventListener("keydown", e => {
@@ -84,12 +95,15 @@ function updatePlayer() {
   if (right && pos < 360) pos += playerSpeed;
   player.style.left = `${pos}px`;
 
-  if (shoot && bullets.children.length < 1) {
+  // Improved shooting mechanics
+  const currentTime = performance.now();
+  if (shoot && currentTime - lastPlayerShot > playerShootCooldown) {
     const bullet = document.createElement("div");
     bullet.classList.add("bullet");
     bullet.style.left = `${player.offsetLeft + 17}px`;
     bullet.style.top = `${player.offsetTop - 10}px`;
     bullets.appendChild(bullet);
+    lastPlayerShot = currentTime;
   }
 }
 
@@ -141,14 +155,81 @@ function showLoseMenu() {
   });
 }
 
+function showLevelCompleteMenu() {
+  const levelMenu = document.createElement("div");
+  levelMenu.id = "level-menu";
+  levelMenu.innerHTML = `
+    <h2>Level ${currentLevel} Complete!</h2>
+    <p>Score: ${score}</p>
+    <p>Time: ${Math.floor(timeElapsed)}s</p>
+    <div class="level-buttons">
+      <button id="next-level-btn">Proceed to Level ${currentLevel + 1}</button>
+      <button id="restart-level-btn">Restart Level</button>
+    </div>
+  `;
+  document.getElementById("game-container").appendChild(levelMenu);
+  
+  document.getElementById("next-level-btn").addEventListener("click", () => {
+    levelMenu.remove();
+    startNextLevel();
+  });
+  
+  document.getElementById("restart-level-btn").addEventListener("click", () => {
+    levelMenu.remove();
+    restartLevel();
+  });
+}
+
+function startNextLevel() {
+  currentLevel++;
+  levelDisplay.textContent = currentLevel;
+  
+  // Increase difficulty
+  enemyBulletSpeed += 1;
+  enemyShootInterval = Math.max(500, enemyShootInterval - 200); // Decrease interval but not below 500ms
+  enemySpeed += 0.2;
+  
+  // Reset game state for new level
+  enemies.innerHTML = "";
+  bullets.innerHTML = "";
+  enemyBullets.innerHTML = "";
+  player.style.left = "180px";
+  enemyDirection = 1;
+  
+  // Create new enemies
+  createEnemies();
+  gameRunning = true;
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+function restartLevel() {
+  // Reset game state for current level
+  enemies.innerHTML = "";
+  bullets.innerHTML = "";
+  enemyBullets.innerHTML = "";
+  player.style.left = "180px";
+  enemyDirection = 1;
+  
+  // Create new enemies
+  createEnemies();
+  gameRunning = true;
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
 function updateBullets() {
+  const bulletsToRemove = [];
   Array.from(bullets.children).forEach(bullet => {
     bullet.style.top = `${bullet.offsetTop - bulletSpeed}px`;
-    if (bullet.offsetTop < 0) bullet.remove();
+    if (bullet.offsetTop < 0) {
+      bulletsToRemove.push(bullet);
+      return;
+    }
 
     Array.from(enemies.children).forEach(enemy => {
       if (checkCollision(bullet, enemy)) {
-        bullet.remove();
+        bulletsToRemove.push(bullet);
         enemy.remove();
         score += 10;
         scoreDisplay.textContent = score;
@@ -158,14 +239,16 @@ function updateBullets() {
           gameRunning = false;
           timerDisplay.textContent = Math.floor(timeElapsed);
           
-          // Wait for 2 seconds before showing win message
           setTimeout(() => {
-            showWinMenu();
+            showLevelCompleteMenu();
           }, 500);
         }
       }
     });
   });
+
+  // Remove bullets in a batch
+  bulletsToRemove.forEach(bullet => bullet.remove());
 }
 
 function updateEnemies() {
@@ -187,6 +270,58 @@ function updateEnemies() {
       enemy.style.top = `${enemy.offsetTop + 10}px`;
     });
   }
+
+  // Enemy shooting logic
+  const currentTime = performance.now();
+  if (currentTime - lastEnemyShot > enemyShootInterval && enemies.children.length > 0) {
+    // Select a random enemy to shoot
+    const randomEnemy = enemies.children[Math.floor(Math.random() * enemies.children.length)];
+    const enemyBullet = document.createElement("div");
+    enemyBullet.classList.add("enemy-bullet");
+    enemyBullet.style.left = `${randomEnemy.offsetLeft + 15}px`; // Center the bullet
+    enemyBullet.style.top = `${randomEnemy.offsetTop + 20}px`;
+    enemyBullets.appendChild(enemyBullet);
+    lastEnemyShot = currentTime;
+  }
+}
+
+function updateEnemyBullets() {
+  const bulletsToRemove = [];
+  Array.from(enemyBullets.children).forEach(bullet => {
+    bullet.style.top = `${bullet.offsetTop + enemyBulletSpeed}px`;
+    
+    if (bullet.offsetTop > 600) {
+      bulletsToRemove.push(bullet);
+      return;
+    }
+
+    if (checkCollision(bullet, player)) {
+      bulletsToRemove.push(bullet);
+      loseLife();
+    }
+  });
+
+  // Remove bullets in a batch
+  bulletsToRemove.forEach(bullet => bullet.remove());
+}
+
+function showGameOverMenu() {
+  const gameOverMenu = document.createElement("div");
+  gameOverMenu.id = "game-over-menu";
+  gameOverMenu.innerHTML = `
+    <h2>Game Over!</h2>
+    <p>Final Score: ${score}</p>
+    <p>Level Reached: ${currentLevel}</p>
+    <p>Time Survived: ${Math.floor(timeElapsed)}s</p>
+    <div class="game-over-buttons">
+      <button id="play-again-btn">Start Over</button>
+    </div>
+  `;
+  document.getElementById("game-container").appendChild(gameOverMenu);
+  
+  document.getElementById("play-again-btn").addEventListener("click", () => {
+    location.reload();
+  });
 }
 
 function loseLife() {
@@ -197,8 +332,15 @@ function loseLife() {
   gameRunning = false;
   
   if (lives <= 0) {
-    alert("Game Over!");
-    location.reload();
+    // Clear any existing menus
+    const existingMenu = document.getElementById("lose-menu");
+    if (existingMenu) {
+      existingMenu.remove();
+    }
+    
+    setTimeout(() => {
+      showGameOverMenu();
+    }, 500);
   } else {
     // Clear any existing lose menu
     const existingMenu = document.getElementById("lose-menu");
@@ -228,18 +370,37 @@ function updateTimer(dt) {
   timerDisplay.textContent = Math.floor(timeElapsed);
 }
 
+function updateFPS(timestamp) {
+  frameCount++;
+  if (timestamp - lastFPSUpdate >= 1000) {
+    fps = frameCount;
+    frameCount = 0;
+    lastFPSUpdate = timestamp;
+  }
+}
+
 function gameLoop(timestamp) {
   if (!gameRunning) return;
-  const dt = timestamp - lastTime;
+
+  // Calculate delta time in seconds
+  const dt = (timestamp - lastTime) / 1000;
   lastTime = timestamp;
 
+  // Update FPS counter
+  updateFPS(timestamp);
+
+  // Update game state
   updatePlayer();
   updateBullets();
   updateEnemies();
-  updateTimer(dt);
+  updateEnemyBullets();
+  updateTimer(dt * 1000); // Convert back to milliseconds for timer
 
+  // Use requestAnimationFrame with timestamp
   requestAnimationFrame(gameLoop);
 }
 
+// Initialize game
 createEnemies();
+lastTime = performance.now();
 requestAnimationFrame(gameLoop);

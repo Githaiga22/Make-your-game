@@ -66,9 +66,18 @@ body {
   
   .bullet {
     position: absolute;
-    width: 5px;
+    width: 4px;
     height: 10px;
-    background: yellow;
+    background-color: #fff;
+    border-radius: 2px;
+  }
+  
+  .enemy-bullet {
+    position: absolute;
+    width: 4px;
+    height: 10px;
+    background-color: #ff4444;
+    border-radius: 2px;
   }
   
   #pause-btn {
@@ -185,5 +194,111 @@ body {
   
   #restart-lose-btn:hover {
     background: #cc0000;
+  }
+  
+  #level-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border: 2px solid #00ff00;
+    text-align: center;
+    z-index: 4;
+  }
+  
+  #level-menu h2 {
+    color: #00ff00;
+    margin-bottom: 20px;
+  }
+  
+  #level-menu p {
+    margin: 10px 0;
+    font-size: 18px;
+  }
+  
+  .level-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  #level-menu button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  #next-level-btn {
+    background: #00ff00;
+    color: #000;
+  }
+  
+  #next-level-btn:hover {
+    background: #00cc00;
+  }
+  
+  #restart-level-btn {
+    background: #ff9900;
+    color: #000;
+  }
+  
+  #restart-level-btn:hover {
+    background: #cc7700;
+  }
+  
+  #game-over-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    padding: 40px;
+    border: 3px solid #ff0000;
+    text-align: center;
+    z-index: 5;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+  }
+  
+  #game-over-menu h2 {
+    color: #ff0000;
+    margin-bottom: 20px;
+    font-size: 36px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
+  
+  #game-over-menu p {
+    margin: 15px 0;
+    font-size: 20px;
+    color: #fff;
+  }
+  
+  .game-over-buttons {
+    margin-top: 30px;
+  }
+  
+  #game-over-menu button {
+    padding: 15px 30px;
+    font-size: 18px;
+    background: #ff0000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+  }
+  
+  #game-over-menu button:hover {
+    background: #cc0000;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
   }
   
