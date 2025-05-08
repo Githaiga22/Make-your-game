@@ -38,6 +38,14 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") left = true;
   if (e.key === "ArrowRight") right = true;
   if (e.key === " " || e.key === "ArrowUp") shoot = true;
+  if (e.key.toLowerCase() === "p") {
+    gameRunning = !gameRunning;
+    pauseMenu.style.display = gameRunning ? "none" : "flex";
+    pauseMenu.classList.toggle("hidden");
+    if (gameRunning) {
+      requestAnimationFrame(gameLoop);
+    }
+  }
 });
 
 document.addEventListener("keyup", e => {
