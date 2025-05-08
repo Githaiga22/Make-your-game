@@ -193,7 +193,7 @@ function startNextLevel() {
   levelDisplay.textContent = currentLevel;
   
   // Increase difficulty
-  enemyBulletSpeed += 1;
+  enemyBulletSpeed += 2;
   enemyShootInterval = Math.max(500, enemyShootInterval - 200); // Decrease interval but not below 500ms
   enemySpeed += 0.2;
   
