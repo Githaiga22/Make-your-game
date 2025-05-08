@@ -16,7 +16,7 @@ A lightweight make-your-game made using only JavaScript and the DOM API. No Canv
 - Left Arrow: Move left
 - Right Arrow: Move right
 - Space / Up Arrow: Shoot
-- Pause Button: Pause / Resume
+- "P" Button: Pause / Resume
 
 ## 📁 Structure
 
